@@ -8,10 +8,8 @@ This project was to help with hands-on Active Directory learning. It is to demon
 
 | Machine | Role | IP | OS |
 |---|---|---|---|
-| DC01 | Domain Controller | 192.168.56.10 | Windows Server 2022
-(Desktop Experience) |
-| CLIENT01 | Domain-joined workstation | 192.168.56.11 | Windows 11
-Enterprise Evaluation |
+| DC01 | Domain Controller (Desktop Experience) | 192.168.56.10 | Windows Server 2022 |
+| CLIENT01 | Domain-joined workstation (Enterprise Evaluation) | 192.168.56.11 | Windows 11 |
 | Kali | Attacker box | 192.168.56.103 | Kali Linux |
 
 All three VMs sit on a VirtualBox **host-only network**
