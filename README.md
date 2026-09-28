@@ -138,7 +138,7 @@ I confirmed the policy was applied on DC01 using 'auditpol /get /category:*', wh
 
 ![auditpol output confirming applied policy](audit-logging/dc01-auditpol-output.png)
 
-To solidify the whole pipeline end-to-end before the attack, I forced an account lockout on 'asmith' and verified it was visibily enforced on CLIENT01 and logged correctly on DC01 as EVENT ID **4740**
+To solidify the whole pipeline end-to-end before the attack, I forced an account lockout on 'asmith' and verified it was visibly enforced on CLIENT01 and logged correctly on DC01 as EVENT ID **4740**
 
 ![asmith locked out on CLIENT01](audit-logging/client01-account-locked-out.png)
 ![Event 4740 — account lockout logged on DC01](audit-logging/dc01-event-4740-lockout.png)
