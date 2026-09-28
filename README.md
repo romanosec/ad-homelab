@@ -106,7 +106,7 @@ I organized the domain with a basic OU structure ('Employees', 'Workstations', '
 I prepared a shared folder ('\\DC01\Company') with NTFS permissions scoped to the 'FileShare-Users' group, and automatically mapped it as a drive letter on domain-joined machines using Group Policy. This way, users don't have to manually go through and connect to the share.
 
 Two additional GPOs were configured to harden the environment:
-- A **Control Panel restriction** policy to limit what standard users can change on their machines'
+- A **Control Panel restriction** policy to limit what standard users can change on their machines'.
 - A **domain password and account lockout policy** (in Default Domain Policy). This will be useful later, since it is what triggers the account lockout during the soon-to-come password spray.
 
 ## 6. Sysmon Deployment
@@ -130,7 +130,7 @@ After finishing the entire environment, I switched to the Kali VM and ran a **Ke
 
 **Recon:** From Kali, I ran an 'nmap' scan against DC01 to verify connection and identify open services.
 
-![nmap scan of DC01](kali-attacks/kali-nmap-dc01.png)
+![nmap scan tail + netexec test](kali-attacks/kali-netexec-first-test.png)
 
 **Initial access - password spray:** Using 'netexec', I tried to log into DC01 as 'jsmith' with a list of guessable passwords. This forced the account to enter its lockout mode, simulating a noisy but real outcome of a spray attack.
 
@@ -142,7 +142,7 @@ After finishing the entire environment, I switched to the Kali VM and ran a **Ke
 
 **Cracking:** My first attempt used 'hashcat', but there was no GPU passthrough available with my Kali VM, making GPU-accelerated cracking impossible in this environment. Instead, I decided to turn towards **John the Ripper** with a custom-made wordlist instead, cracking the hash instantly.
 
-![hashcat failing due to no GPU](kali-attacks/kali-hashcat-no-gpu-error.png)
+![hashcat failing](kali-attacks/kali-hashcat-force-D-error.png)
 ![John the Ripper cracking svc_sql's password](kali-attacks/kali-john-cracked-svc-sql.png)
 
 The cracked password was 'homelab2026!'. This proves that a weak service account password mixed with an SPN is plenty for a domain user to compromise the account's credentials even while offline.
@@ -164,6 +164,6 @@ This loop of misconfiguring, attacking, and confirming visiblity in logs, best r
 ## 9. What I'd Do Next
 
 I would like to explore many things if I continue with this lab:
-- Forward Sysmon and Security event logs to a SIEM (e.g. Splunk or a free ELK stack) to create actual detection rules and alerts instead of having to manually go through Event Viewer and find the logs
-- Add another less obvious attack path (e.g. AS-REP roasting, or abusing a misconfigured GPO) to widen the detection coverage
+- Forward Sysmon and Security event logs to a SIEM (e.g. Splunk or a free ELK stack) to create actual detection rules and alerts instead of having to manually go through Event Viewer and find the logs.
+- Add another less obvious attack path (e.g. AS-REP roasting, or abusing a misconfigured GPO) to widen the detection coverage.
 - Script the entire environment with PowerShell DSC or Ansible so that the lab can be fully reproduced from scratch.
