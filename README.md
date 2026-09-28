@@ -101,6 +101,12 @@ I organized the domain with a basic OU structure ('Employees', 'Workstations', '
 ![New user jsmith](users-and-groups/dc01-aduc-new-user-jsmith.png)
 ![FileShare-Users group membership](users-and-groups/dc01-aduc-group-membership.png)
 
+To ensure that permissions were working and not just configured, I made another user, 'asmith', deliberately **left out** of the 'FileShare-Users' group, and double-checked that user is denied share access while 'jsmith' is allowed.
+
+![asmith not in FileShare-Users](users-and-groups/dc01-aduc-asmith-not-in-group.png)
+![Access denied for asmith](users-and-groups/client01-asmith-access-denied.png)
+![jsmith confirmed via whoami](users-and-groups/client01-domain-user-whoami.png)
+
 ## 5. File Share & Group Policy
 
 I prepared a shared folder ('\\DC01\Company') with NTFS permissions scoped to the 'FileShare-Users' group, and automatically mapped it as a drive letter on domain-joined machines using Group Policy. This way, users don't have to manually go through and connect to the share.
@@ -155,7 +161,7 @@ The next half of this project, and what I personally found most valuable, was re
 
 ![Event 4625 — failed logon from Kali's IP](kali-attacks/dc01-event-4625-network-source.png)
 
-**Kerberos ticket request (the actual Kerberoasting):** Event ID **4679** expresses the Kerberos service ticket request for 'svc_sql'. A defender, upon seeing this event, would monitor to catch the Kerberoasting in progress, especially when connected to a spike in ticket requests for accounts with SPNs.
+**Kerberos ticket request (the actual Kerberoasting):** Event ID **4769** expresses the Kerberos service ticket request for 'svc_sql'. A defender, upon seeing this event, would monitor to catch the Kerberoasting in progress, especially when connected to a spike in ticket requests for accounts with SPNs.
 
 ![Event 4769 — Kerberos ticket requested for svc_sql](kali-attacks/dc01-event-4769-ticket-request.png)
 
