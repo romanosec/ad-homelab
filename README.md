@@ -25,9 +25,10 @@ Domain: 'corp.local' (NetBIOS: 'CORP')
 4. [Users, Group & OUs](#4-users-groups--ous)
 5. [File Share & Group Policy](#5-file-share--group-policy)
 6. [Sysmon Deployment](#6-sysmon-deployment)
-7. [Attack: Kerberoasting](#7-attack-kerberoasting)
-8. [Detection: Verifying the Attack in Event Logs](#8-detection-verifying-the-attack-in-event-logs)
-9. [What I'd Do Next](#9-what-id-do-next)
+7. [Audit Policy Configuration](#7-audit-policy-configuration)
+8. [Attack: Kerberoasting](#8-attack-kerberoasting)
+9. [Detection: Verifying the Attack in Event Logs](#9-detection-verifying-the-attack-in-event-logs)
+10. [What I'd Do Next](#10-what-id-do-next)
 
 ---
 
@@ -124,7 +125,27 @@ I made sure Sysmon was capturing events by looking at Event Viewer for a live Ev
 
 ![Sysmon Event ID 1 in Event Viewer](sysmon/client01-sysmon-event-1-process-create.png)
 
-## 7. Attack: Kerberoasting
+## 7. Audit Policy Configuration
+Windows, by default, doesn't log most security-relevant activity that this project relies on to progress, logging has to be explicitly turned on. Before attacking, I configured a dedicated GPO ("Baseline - Audit Policy") on DC01 with the Advanced Audit Policy Configuration. This allowed me to enable categories like Account Logon, Account Management, Logon/Logoff, and Object Access.
+
+![Advanced Audit Policy categories configured](audit-logging/dc01-gpo-advanced-audit-policy.png)
+
+An easy-to-miss detail is that newer Windows versions support two different audit policy systems (legacy "basic" auditing and the newer "advanced" auditing), and they can easily conflict with each other if not configured correctly. To ensure advanced policy actually takes effect, I enabled **"Audit: Force audit policy subcategory settings to override audit policy category settings."**
+
+![Force audit policy subcategory setting enabled](audit-logging/dc01-gpo-force-audit-subcategory.png)
+
+I confirmed the policy was applied on DC01 using 'auditpol /get /category:*', which shows what event categories are set to log Success, Failure, or both.
+
+![auditpol output confirming applied policy](audit-logging/dc01-auditpol-output.png)
+
+To solidify the whole pipeline end-to-end before the attack, I forced an account lockout on 'asmith' and verified it was visibily enforced on CLIENT01 and logged correctly on DC01 as EVENT ID **4740**
+
+![asmith locked out on CLIENT01](audit-logging/client01-account-locked-out.png)
+![Event 4740 — account lockout logged on DC01](audit-logging/dc01-event-4740-lockout.png)
+
+With logging configured correctly, I moved onto the attack chain, knowing that every single step I did would leave a verifiable paper trail.
+
+## 8. Attack: Kerberoasting
 
 After finishing the entire environment, I switched to the Kali VM and ran a **Kerberoasting** attack chain against a vulnerable service account. This is a realistic simulation of how an attacker could escalate from a low-privilege standing to a crackable credential.
 
@@ -151,7 +172,7 @@ After finishing the entire environment, I switched to the Kali VM and ran a **Ke
 
 The cracked password was 'homelab2026!'. This proves that a weak service account password mixed with an SPN is plenty for a domain user to compromise the account's credentials even while offline.
 
-## 8. Detection: Verifying the Attack in Event Logs
+## 9. Detection: Verifying the Attack in Event Logs
 
 The next half of this project, and what I personally found most valuable, was returning to DC01 and verifying that every single step of the attack had left a paper trail in the Windows Security event log.
 
@@ -165,7 +186,7 @@ The next half of this project, and what I personally found most valuable, was re
 
 This loop of misconfiguring, attacking, and confirming visiblity in logs, best represents the purple-team mindset in cybersecurity. You must understand and master an attack process to both execute and detect it.
 
-## 9. What I'd Do Next
+## 10. What I'd Do Next
 
 I would like to explore many things if I continue with this lab:
 - Forward Sysmon and Security event logs to a SIEM (e.g. Splunk or a free ELK stack) to create actual detection rules and alerts instead of having to manually go through Event Viewer and find the logs.
